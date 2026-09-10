@@ -40,8 +40,8 @@ stop whenever you like and say "continue setup" later.
    security reviewed
 7. Shows you where your own case studies, images and CV go
 8. Puts it online: a GitHub account to hold the code, a Cloudflare account to
-   host it, a private staging copy and the live site. Your own domain is
-   optional.
+   host it, a staging copy for previewing changes, and the live site. Your
+   own domain is optional.
 9. Makes a guide explaining how your site works
 
 Two example case studies (Harbourline Ferries and Meadowbank Libraries) are

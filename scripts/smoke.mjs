@@ -118,6 +118,20 @@ if (locked) {
     expect(redirectsTo(await get(`/case-studies/${study.slug}/one-pager`), unlock), 'its one-pager is protected too')
     const image = firstImage(study.slug)
     if (image) expect(redirectsTo(await get(image), unlock), `its image ${image} is protected too`)
+    // Disguised addresses for the same content must not get through either
+    const hex = (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`
+    const disguised = [
+      `/case-studies/${hex(study.slug[0])}${study.slug.slice(1)}`,
+      `/case-studies/${study.slug.toUpperCase()}`,
+      `/case-studies/${study.slug}%2Fone-pager`,
+      ...(study.slug.includes('-') ? [`/case-studies/${study.slug.replace('-', '%2D')}`] : []),
+      ...(image ? [image.replace(`${study.slug}/`, `${study.slug}%2F`), image.replace(study.slug, study.slug.toUpperCase())] : []),
+    ]
+    for (const path of disguised) {
+      const res = await get(path)
+      expect(res.status !== 200, `${path} does not bypass the passphrase (answered ${res.status})`)
+    }
+
     const unlockPage = await get(unlock)
     expect(unlockPage.status === 200, 'its unlock page answers 200')
     expect(/<meta[^>]+name="robots"[^>]+noindex/.test(await unlockPage.text()), 'its unlock page tells search engines not to index it')

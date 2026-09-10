@@ -150,34 +150,99 @@ see a skill later, start a new session and say "continue setup".
 
 Record `"phase": 3` and commit.
 
-## Step 3 of 9: About you
+## Step 3 of 9: About you, starting from your CV
 
-Fill `src/content/site.ts` and `src/content/cv.ts`. One question at a time:
+Their CV is the richest source of facts they have, so it comes first and
+does most of the work. This step produces three things from it: **their new
+CV** (the `/cv` page and its PDF), **the home page content** (name, role,
+location, introduction) and **the About page content** (bio, testimonials,
+contact). Everything goes into `src/content/site.ts` and
+`src/content/cv.ts`.
+
+### 3.1 Get the CV
+
+Ask them to drag their current CV into the chat (PDF or Word; a LinkedIn
+profile saved as PDF also works). Read all of it. If they have no CV to
+hand, interview them role by role instead, one question at a time, and
+carry on from 3.3.
+
+### 3.2 Build the new CV
+
+Fill `src/content/cv.ts` from it:
+
+- **Summary**: their own summary, as written.
+- **Roles**, newest first: title, dates, employer, an optional one-line
+  intro about the employer, and the bullets **exactly as written**. Offer
+  to tighten wording, but change nothing without their say-so.
+- **Certifications**, with issue and expiry months, credential IDs and
+  verification links where the CV gives them. Anything missing, ask.
+- **Skills**, with a level for each if the CV has one; ask if it does not.
+
+Then check it back with them in batches, not all at once: first the roles
+and dates, then the certifications, then the skills. Correct anything they
+flag.
+
+Start the dev server if it is not running and generate the PDF:
+
+```bash
+npm run cv
+```
+
+It refuses to go over two pages. If it does, tighten (a two-line bullet
+that can be one, a bullet with no outcome, repetition) and show them what
+you cut; if nothing can go without losing something real, ask them what to
+remove. Never shrink the type or margins. Show them
+`public/documents/cv.pdf` and get their approval of the CV as a document in
+its own right: it is what employers will download.
+
+**Phone** (optional): if they want it on the PDF, it goes in `CV_PHONE` in
+`.env.local`, which never reaches the live site. Ask them to add it to the
+file themselves, then regenerate.
+
+### 3.3 Confirm the basics
+
+Pre-fill from the CV and ask them to confirm or correct, one at a time:
 
 1. Their name as it should appear on the site.
-2. Their role or title.
+2. Their role or title for the site's headline. It may differ from the
+   current job title on the CV, for example the kind of role they are
+   looking for next.
 3. Where they are based (city and country).
 4. The email address visitors should use. Remind them it will be public.
 5. Their LinkedIn profile URL.
-6. **House style.** UK or US spelling? Any writing rules they care about
-   (for example, no em dashes)? Record the answer in the "House style"
-   section of `CLAUDE.md`, and follow it from now on.
-7. **Their CV.** Ask them to drag their current CV (PDF or Word) into the
-   chat. Read it and fill `cv.ts`: summary, roles (newest first, with
-   bullets exactly as written unless they ask you to tighten them),
-   certifications and skills. Confirm every role and date back to them. If
-   they have no CV to hand, interview them role by role instead.
-8. **Tagline and bio.** From what you now know, draft three tagline options
-   (one sentence each) and a two-paragraph bio. Let them pick and edit.
-   Their words win.
-9. **Testimonials** (optional). Only verbatim quotes, with the person's name
-   and role. LinkedIn recommendations are a good source. Never tidy the
-   wording.
-10. **Phone** (optional): if they want it on the CV PDF, it goes in
-    `CV_PHONE` in `.env.local`, which never reaches the live site. Ask them
-    to add it to the file themselves.
 
-Leave `site.url` for step 8. Show them the updated pages in the browser.
+### 3.4 House style
+
+UK or US spelling? Any writing rules they care about (for example, no em
+dashes)? Record the answer in the "House style" section of `CLAUDE.md`,
+follow it from now on, and re-read the CV entries against it.
+
+### 3.5 Draft the home and About pages
+
+From the CV and what they have told you, draft, never inventing a fact:
+
+- **Home page introduction** (`site.tagline`): three options, one sentence
+  each, each leading with the kind of problem they are best at. Draw on the
+  strongest, most specific outcomes in their CV.
+- **About page bio** (`site.bio`): two or three short paragraphs. Who they
+  are and what they do; how they work, with one or two concrete examples
+  from their roles; what they are looking for next, if they want to say.
+
+Show the drafts, let them pick and edit, then ask one question to sharpen
+them: "Is there anything about how you work that the CV does not show?"
+Fold the answer in. Their words win over yours every time.
+
+### 3.6 Testimonials (optional)
+
+Ask whether they have recommendations, for example on LinkedIn. Only
+verbatim quotes, with the person's name and role, go on the About page.
+Never tidy the wording; an ellipsis may trim a long one.
+
+### 3.7 Show them
+
+Leave `site.url` for step 8. Show the home page, the About page, the CV page
+and the PDF in the browser. Adjust until they are happy.
+
 Record `"phase": 4` and commit.
 
 ## Step 4 of 9: Your moodboard
@@ -221,8 +286,7 @@ This is the heart of the design. Take your time.
 6. Show them the brief. Revise until they say it describes what they want.
 
 Do not copy their moodboard images into the repository: they are other
-people's work, and the repository may become public. The brief records the
-file names only.
+people's work. The brief records the file names only.
 
 Record `"phase": 5` and commit.
 
@@ -350,9 +414,11 @@ Record `"phase": 8` and commit.
 
 ## Step 8 of 9: Going live
 
-Two free accounts, two copies of the site: **staging**, a private preview
+Two free accounts, two copies of the site: **staging**, a preview copy
 where every change appears first, and **production**, the live site. Both
-get free `*.workers.dev` addresses. A custom domain is optional and comes at
+get free `*.workers.dev` addresses. Be clear that staging is not private:
+anyone with its address can open it, and protected studies are guarded by
+the same passphrase as on the live site. A custom domain is optional and comes at
 the end.
 
 ### 8.1 GitHub

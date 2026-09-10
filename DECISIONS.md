@@ -32,12 +32,19 @@ study's images are covered by the same passphrase as its page. The cost is a
 Worker invocation per study image, which is well within the free plan for a
 portfolio.
 
-### Exact path matching for protection
+### Exact path matching for protection, on the decoded path
 `src/lib/paths.ts` matches a protected study's path exactly: the path
 itself, or anything below it, never a mere prefix, and exempts only the
 exact unlock page. A prefix test would catch a different study whose name
 starts the same way; a substring test for "/unlock" would let an image named
 `unlock-flow.png` through.
+
+The match runs on the path after percent-decoding and with case ignored,
+because that is the path Next.js actually routes and serves. The first
+independent security review found that matching the raw path let
+`/case-studies/harbourline%2Dferries` read a protected study in full,
+images included. `tests/paths.test.ts` and the smoke test both try disguised
+addresses now.
 
 ### Study facts in a TypeScript file, stories in MDX
 `src/content/studies.ts` holds each study's facts; the MDX file holds the

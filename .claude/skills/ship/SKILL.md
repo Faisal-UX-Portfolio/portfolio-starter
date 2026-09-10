@@ -23,6 +23,15 @@ git log --oneline origin/main..origin/staging
   If there is uncommitted work, stop and ask what it is.
 - If `origin/main..origin/staging` is empty, there is nothing to ship: say
   so in one line and stop.
+- **The repository must be private while any study is protected**, because
+  it holds the full text of every study:
+  ```bash
+  gh repo view --json visibility -q .visibility
+  grep -c "protected: true" src/content/studies.ts
+  ```
+  If there is a protected study and the answer is not `PRIVATE`, stop. Ask
+  the owner to make it private (the repository's Settings on GitHub, at the
+  bottom) before anything ships.
 
 ## 2. Check
 

@@ -90,7 +90,8 @@ const mustContain = {
   ],
   'src/middleware.ts': [
     ['LOCKDOWN_OPEN_PATHS.has(pathname)', 'the exact-match lockdown allowlist'],
-    ['isUnderProtectedBase(pathname, base)', 'the exact protected path matching'],
+    ['normalisePath(request.nextUrl.pathname)', 'decoding the path before matching it'],
+    ['isUnderProtectedBase(matchable, base)', 'the exact, case-insensitive protected path matching'],
   ],
   'src/lib/paths.ts': [['pathname === `${base}/unlock`', 'the exact unlock-page exemption']],
   'next.config.mjs': [

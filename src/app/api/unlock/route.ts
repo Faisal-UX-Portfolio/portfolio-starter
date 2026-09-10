@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { password, slug } = await req.json()
+    // A body that is not JSON is a bad request, not a server error
+    const body = await req.json().catch(() => null)
+    const { password, slug } = body ?? {}
 
     if (
       !password ||
