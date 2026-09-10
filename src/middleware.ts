@@ -29,9 +29,14 @@ export async function middleware(request: NextRequest) {
 
   // Emergency site-wide lock (src/lib/lockdown.ts). Exact path matching:
   // a loose check guarding the whole site is a hole waiting to be found.
+  // The build's own static files stay reachable, or the lock screen would
+  // load without the JavaScript that makes its form work. Safe as a prefix
+  // only because normalisePath has already refused dot segments, so it can
+  // name nothing outside the static build folder.
   if (
     LOCKDOWN &&
     !LOCKDOWN_OPEN_PATHS.has(pathname) &&
+    !pathname.startsWith('/_next/static/') &&
     !(await hasGrant(request, LOCKDOWN_SLUG))
   ) {
     return NextResponse.redirect(new URL(LOCKDOWN_PATH, request.url))

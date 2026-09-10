@@ -107,7 +107,7 @@ export function UnlockForm({
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-paper-raised p-8 shadow-card sm:p-10">
+    <div className="rounded-2xl border border-line bg-paper-raised p-5 shadow-card sm:p-10">
       <div
         className="mb-7 flex h-12 w-12 items-center justify-center rounded-full"
         style={{ background: 'var(--accent-wash)' }}
@@ -118,7 +118,7 @@ export function UnlockForm({
       <p className="eyebrow mb-2" style={{ color: 'var(--accent-ink)' }}>
         {eyebrow}
       </p>
-      <h1 className="mb-2 font-display text-2xl font-bold text-ink sm:text-3xl">{title}</h1>
+      <h1 className="mb-2 font-display text-xl font-bold text-ink sm:text-3xl">{title}</h1>
       <p className="mb-9 font-body text-sm leading-relaxed text-ink-soft">{blurb}</p>
 
       <div role="group" aria-label="Four-word passphrase" aria-describedby={error ? 'unlock-error' : undefined}>
@@ -152,10 +152,13 @@ export function UnlockForm({
           ))}
         </div>
 
+        {/* Numbers only: "Word 1" is wider than its box at large text sizes
+            and ran into its neighbours. Each input carries its full
+            "Word 1 of 4" label for screen readers. */}
         <div className="mb-6 flex gap-2" aria-hidden="true">
           {values.map((_, i) => (
-            <p key={i} className="min-w-0 flex-1 text-center text-2xs font-semibold uppercase tracking-widest text-ink-faint">
-              Word {i + 1}
+            <p key={i} className="min-w-0 flex-1 text-center font-mono text-xs font-semibold text-ink-faint">
+              {i + 1}
             </p>
           ))}
         </div>

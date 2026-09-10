@@ -261,6 +261,24 @@ if (!chrome) {
       await page.close()
     }
     ok(`browser checks ran on ${paths.length} page(s): 375px and 1440px in light and dark, and 375px and 768px at 200% text`)
+
+    // The phone menu: opens, closes on Escape, and closes after a link in it is followed
+    if (!locked || grant) {
+      const page = await browser.newPage()
+      await page.setViewport({ width: 375, height: 812 })
+      await page.goto(`${BASE}/`, { waitUntil: 'networkidle0' })
+      const isOpen = () => page.$eval('header details', (d) => d.open)
+      await page.click('header details summary')
+      const opened = await isOpen()
+      await page.keyboard.press('Escape')
+      const escaped = !(await isOpen())
+      await page.click('header details summary')
+      await Promise.all([page.waitForFunction(() => location.pathname === '/about'), page.click('header details a[href="/about"]')])
+      await new Promise((r) => setTimeout(r, 300))
+      const closedAfterNav = !(await isOpen())
+      expect(opened && escaped && closedAfterNav, `the phone menu opens (${opened}), closes on Escape (${escaped}) and closes after choosing a page (${closedAfterNav})`)
+      await page.close()
+    }
   } finally {
     await browser.close()
   }

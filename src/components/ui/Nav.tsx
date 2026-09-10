@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { Menu } from 'lucide-react'
 import { site } from '@/content/site'
 import { ThemeToggle } from './ThemeToggle'
+import { MobileMenu } from './MobileMenu'
 
 const LINKS = [
   { href: '/case-studies', label: 'Work' },
@@ -12,8 +12,7 @@ const LINKS = [
 /**
  * Baseline navigation. The full row appears only from the `nav` breakpoint
  * (64em in tailwind.config.ts). Below it, the links and the appearance
- * control move into a native <details> menu, keyboard accessible with no
- * JavaScript.
+ * control move into the menu (MobileMenu.tsx).
  *
  * The breakpoint is in em, not px, on purpose: em in a media query tracks
  * the reader's text size, so at 200% text every real screen gets the menu,
@@ -43,28 +42,20 @@ export function Nav() {
           <ThemeToggle />
         </div>
 
-        <details className="relative shrink-0 nav:hidden">
-          <summary
-            aria-label="Menu"
-            className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full text-ink [&::-webkit-details-marker]:hidden"
-          >
-            <Menu size={20} aria-hidden="true" />
-          </summary>
-          <div className="absolute right-0 mt-2 w-max max-w-[calc(100vw-2.5rem)] rounded-2xl border border-line bg-paper-raised p-2 shadow-card">
-            <ul className="m-0 list-none p-0">
-              {LINKS.map(({ href, label }) => (
-                <li key={href}>
-                  <Link href={href} className="block rounded-lg px-4 py-3 text-sm font-semibold text-ink hover:bg-paper-sunken">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="border-t border-line px-2 pt-2 mt-1">
-              <ThemeToggle />
-            </div>
+        <MobileMenu className="nav:hidden">
+          <ul className="m-0 list-none p-0">
+            {LINKS.map(({ href, label }) => (
+              <li key={href}>
+                <Link href={href} className="block rounded-lg px-4 py-3 text-sm font-semibold text-ink hover:bg-paper-sunken">
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-1 border-t border-line px-2 pt-2">
+            <ThemeToggle />
           </div>
-        </details>
+        </MobileMenu>
       </nav>
     </header>
   )

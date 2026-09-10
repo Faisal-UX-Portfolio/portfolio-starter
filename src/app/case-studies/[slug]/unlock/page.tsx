@@ -12,7 +12,6 @@ export default function StudyUnlockPage({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 pt-16" style={accentStyle(meta.colour)}>
-      <meta name="robots" content="noindex, nofollow" />
       <div className="w-full max-w-lg pb-16">
         <UnlockForm
           slug={slug}
