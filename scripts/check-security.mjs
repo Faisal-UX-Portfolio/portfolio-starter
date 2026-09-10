@@ -109,7 +109,11 @@ for (const [file, needles] of Object.entries(mustContain)) {
   }
   const text = read(file)
   for (const [needle, what] of needles) {
-    if (!text.includes(needle)) errors.push(`${file} no longer contains ${what} (${needle})`)
+    // A needle ending in a number must not match a longer number, or
+    // "MAX_ATTEMPTS = 5" would happily accept a limit of 50
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(/\d$/.test(needle) ? `${escaped}(?!\\d)` : escaped)
+    if (!pattern.test(text)) errors.push(`${file} no longer contains ${what} (${needle})`)
   }
 }
 
