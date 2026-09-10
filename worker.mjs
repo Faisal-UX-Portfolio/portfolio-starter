@@ -20,7 +20,10 @@ export * from './.open-next/worker.js'
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url)
-    if (pathname === '/_next/image' || pathname.startsWith('/_next/image/')) {
+    // /cdn-cgi/image/ is the same optimiser by another name. Cloudflare's
+    // edge claims /cdn-cgi/ before the Worker in production, but a local
+    // preview (npm run preview) would serve protected images through it.
+    if (pathname === '/_next/image' || pathname.startsWith('/_next/image/') || pathname.startsWith('/cdn-cgi/')) {
       return new Response('Not found', { status: 404 })
     }
     return handler.fetch(request, env, ctx)

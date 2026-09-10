@@ -35,7 +35,8 @@ export function StudyCard({ study }: { study: CaseStudyMeta }) {
           {study.client}
         </p>
         <h3 className="mb-3 font-display text-xl font-bold leading-snug text-ink">{study.title}</h3>
-        <p className="font-body leading-relaxed text-ink-soft">{study.summary}</p>
+        {/* A protected study shows only its client and title in public */}
+        {!study.protected && <p className="font-body leading-relaxed text-ink-soft">{study.summary}</p>}
       </div>
     </Link>
   )

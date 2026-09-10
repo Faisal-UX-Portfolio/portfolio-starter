@@ -103,7 +103,9 @@ export function CaseStudyLayout({ meta, children }: { meta: CaseStudyMeta; child
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
             <p className="eyebrow mb-3 text-ink-soft">Next case study</p>
             <h2 className="mb-3 font-display text-2xl font-bold text-ink">{next.title}</h2>
-            <p className="mb-5 max-w-xl font-body leading-relaxed text-ink-soft">{next.summary}</p>
+            {/* This link can sit at the foot of a public study, so a protected
+                next study shows only its title here */}
+            {!next.protected && <p className="mb-5 max-w-xl font-body leading-relaxed text-ink-soft">{next.summary}</p>}
             <Link
               href={`/case-studies/${next.slug}`}
               className="group inline-flex items-center gap-2 py-1.5 font-display text-sm font-semibold text-ink"
