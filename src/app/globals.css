@@ -259,9 +259,9 @@ body {
   vertical-align: top;
 }
 
-/* Images may break wider than the text column */
+/* Images keep to the text column, so every edge in the article lines up */
 .reading figure {
-  max-width: 56rem;
+  max-width: 42rem;
   margin: 2.75rem auto;
 }
 .reading figure img {

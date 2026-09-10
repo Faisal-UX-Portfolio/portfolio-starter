@@ -88,7 +88,7 @@ export function ArtifactViewer({
   }, [scale, onZoomChange])
 
   return (
-    <div className="my-10 rounded-xl overflow-hidden border border-line shadow-card" style={{ maxWidth: '56rem', marginLeft: 'auto', marginRight: 'auto' }}>
+    <div className="my-10 rounded-xl overflow-hidden border border-line shadow-card" style={{ maxWidth: '42rem', marginLeft: 'auto', marginRight: 'auto' }}>
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-inverted">
         <div className="flex items-center gap-2.5 min-w-0">

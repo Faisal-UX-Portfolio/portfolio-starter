@@ -38,7 +38,7 @@ export default async function OnePagerPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="px-5 pt-24 pb-16 sm:px-8 print:p-0" style={accentStyle(meta.colour)}>
-      <div className="mx-auto mb-8 flex max-w-3xl items-center justify-between gap-4 print:hidden">
+      <div className="mx-auto mb-8 flex max-w-3xl flex-wrap items-center justify-between gap-4 print:hidden">
         <Link href={`/case-studies/${meta.slug}`} className="group inline-flex items-center gap-2 font-display text-sm font-semibold text-ink">
           <ArrowLeft size={15} className="transition-transform group-hover:-translate-x-1" aria-hidden="true" />
           Back to the full study
@@ -104,10 +104,10 @@ export default async function OnePagerPage({ params }: { params: Promise<{ slug:
         )}
 
         <footer className="flex flex-col justify-between gap-2 border-t border-line pt-6 text-sm text-ink-soft sm:flex-row sm:items-center">
-          <p>
-            Full story: <span className="font-medium text-ink">{SITE_URL}/case-studies/{meta.slug}</span>
+          <p className="min-w-0 break-words">
+            Full story: <span className="break-all font-medium text-ink">{SITE_URL}/case-studies/{meta.slug}</span>
           </p>
-          <p className="font-medium text-ink">{site.email}</p>
+          <p className="min-w-0 break-all font-medium text-ink">{site.email}</p>
         </footer>
       </article>
     </div>

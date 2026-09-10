@@ -47,6 +47,11 @@ const config: Config = {
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],
       },
+      screens: {
+        /** Where the full nav row fits. In em so it tracks the reader's
+            text size: see Nav.tsx. */
+        nav: '64em',
+      },
       boxShadow: {
         card: '0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.08)',
       },

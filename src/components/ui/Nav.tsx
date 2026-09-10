@@ -10,8 +10,14 @@ const LINKS = [
 ]
 
 /**
- * Baseline navigation. Below the md breakpoint the links move into a native
- * <details> menu, which is keyboard accessible with no JavaScript.
+ * Baseline navigation. The full row appears only from the `nav` breakpoint
+ * (64em in tailwind.config.ts). Below it, the links and the appearance
+ * control move into a native <details> menu, keyboard accessible with no
+ * JavaScript.
+ *
+ * The breakpoint is in em, not px, on purpose: em in a media query tracks
+ * the reader's text size, so at 200% text every real screen gets the menu,
+ * and the bar never overflows however large the text is set.
  */
 export function Nav() {
   return (
@@ -24,25 +30,28 @@ export function Nav() {
           {site.name}
         </Link>
 
-        <div className="flex items-center gap-2 sm:gap-5">
-          <ul className="hidden md:flex items-center gap-6 list-none m-0 p-0">
+        <div className="hidden items-center gap-6 nav:flex">
+          <ul className="m-0 flex list-none items-center gap-6 p-0">
             {LINKS.map(({ href, label }) => (
               <li key={href}>
-                <Link href={href} className="py-2 text-sm font-semibold text-ink-soft hover:text-ink transition-colors">
+                <Link href={href} className="py-2 text-sm font-semibold text-ink-soft transition-colors hover:text-ink">
                   {label}
                 </Link>
               </li>
             ))}
           </ul>
           <ThemeToggle />
-          <details className="relative md:hidden">
-            <summary
-              aria-label="Menu"
-              className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full text-ink [&::-webkit-details-marker]:hidden"
-            >
-              <Menu size={20} aria-hidden="true" />
-            </summary>
-            <ul className="absolute right-0 mt-2 w-52 list-none rounded-2xl border border-line bg-paper-raised p-2 shadow-card">
+        </div>
+
+        <details className="relative shrink-0 nav:hidden">
+          <summary
+            aria-label="Menu"
+            className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full text-ink [&::-webkit-details-marker]:hidden"
+          >
+            <Menu size={20} aria-hidden="true" />
+          </summary>
+          <div className="absolute right-0 mt-2 w-max max-w-[calc(100vw-2.5rem)] rounded-2xl border border-line bg-paper-raised p-2 shadow-card">
+            <ul className="m-0 list-none p-0">
               {LINKS.map(({ href, label }) => (
                 <li key={href}>
                   <Link href={href} className="block rounded-lg px-4 py-3 text-sm font-semibold text-ink hover:bg-paper-sunken">
@@ -51,8 +60,11 @@ export function Nav() {
                 </li>
               ))}
             </ul>
-          </details>
-        </div>
+            <div className="border-t border-line px-2 pt-2 mt-1">
+              <ThemeToggle />
+            </div>
+          </div>
+        </details>
       </nav>
     </header>
   )

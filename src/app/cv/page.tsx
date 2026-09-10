@@ -55,8 +55,13 @@ export default function CvPage() {
   return (
     <div className="bg-white pt-24 pb-16 print:p-0">
       <style>{`@media print { body { background: white; } }`}</style>
-      <article className="mx-auto w-[182mm] bg-white font-cv text-[9.26pt] leading-[11.9pt] text-cv-ink print:w-full" lang={site.locale}>
-        <header className="flex items-start justify-between gap-[20pt]">
+      {/* A4 width on screen too, but allowed to shrink on a phone. Print
+          ignores both: the generator supplies the page and its margins. */}
+      <article
+        className="mx-auto w-full max-w-[182mm] bg-white px-5 font-cv text-[9.26pt] leading-[11.9pt] text-cv-ink print:max-w-none print:px-0"
+        lang={site.locale}
+      >
+        <header className="flex flex-wrap items-start justify-between gap-[20pt]">
           <div>
             <h1 className="text-[18pt] font-bold leading-[22pt] text-cv-ink">{site.name}</h1>
             <p className="mt-[4pt] text-[11pt] leading-[14pt] text-cv-ink">{site.role}</p>
@@ -126,9 +131,9 @@ export default function CvPage() {
         )}
 
         <SectionHeading>Skills</SectionHeading>
-        <ul className="columns-2 gap-[7.9pt]">
+        <ul className="gap-[7.9pt] sm:columns-2 print:columns-2">
           {cv.skills.map((skill) => (
-            <li key={skill.name} className="grid break-inside-avoid grid-cols-[129pt_1fr] gap-[4pt] leading-[13.5pt]">
+            <li key={skill.name} className="grid break-inside-avoid grid-cols-[minmax(0,129pt)_1fr] gap-[4pt] leading-[13.5pt]">
               <span>{skill.name}</span>
               <span className="text-cv-muted">{skill.level}</span>
             </li>

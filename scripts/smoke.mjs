@@ -142,7 +142,11 @@ if (locked) {
   if (!target) {
     note('No protected studies, so the unlock flow was not tested')
   } else {
-    if (local) expect((await unlockAttempt('not-a-real-slug', 'aaaa-bbbb-cccc-dddd')).status === 400, 'an unknown slug is rejected with 400')
+    if (local) {
+      expect((await unlockAttempt('not-a-real-slug', 'aaaa-bbbb-cccc-dddd')).status === 400, 'an unknown slug is rejected with 400')
+      const junk = await fetch(`${BASE}/api/unlock`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...clientHeaders }, body: '{not json' })
+      expect(junk.status === 400, `a body that is not JSON is rejected with 400 (answered ${junk.status})`)
+    }
     expect((await unlockAttempt(target.slug, 'not-the-real-passphrase')).status === 401, 'a wrong passphrase is rejected with 401')
 
     if (!password) {
@@ -200,31 +204,43 @@ if (!chrome) {
     const host = new URL(BASE).hostname
     if (grant) await browser.setCookie({ name: 'portfolio_access', value: grant, domain: host, path: '/', secure: BASE.startsWith('https') })
 
+    const readable = caseStudies.filter((cs) => !cs.protected || grant)
     const paths = locked && !grant
       ? ['/unlock']
-      : ['/', '/case-studies', '/about', '/certifications', ...caseStudies.filter((cs) => !cs.protected || grant).map((cs) => `/case-studies/${cs.slug}`)]
+      : [
+          '/', '/case-studies', '/about', '/certifications', '/cv',
+          ...readable.map((cs) => `/case-studies/${cs.slug}`),
+          ...readable.map((cs) => `/case-studies/${cs.slug}/one-pager`),
+        ]
 
-    for (const scheme of ['light', 'dark']) {
-      for (const [width, height] of [[375, 812], [1440, 900]]) {
-        const page = await browser.newPage()
-        await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }])
-        await page.setViewport({ width, height })
-        const problems = []
-        page.on('pageerror', (err) => problems.push(err.message))
-        page.on('console', (msg) => msg.type() === 'error' && problems.push(msg.text()))
+    // Light and dark at phone and desktop widths, then a phone at 200% text
+    // size, which is where most sideways-scrolling bugs hide
+    const passes = [
+      ['light', 375, 100], ['light', 1440, 100], ['dark', 375, 100], ['dark', 1440, 100], ['light', 375, 200], ['light', 768, 200],
+    ]
+    for (const [scheme, width, textSize] of passes) {
+      const page = await browser.newPage()
+      await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }])
+      await page.setViewport({ width, height: 900 })
+      const problems = []
+      page.on('pageerror', (err) => problems.push(err.message))
+      page.on('console', (msg) => msg.type() === 'error' && problems.push(msg.text()))
 
-        for (const path of paths) {
-          problems.length = 0
-          await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle0' })
-          const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
-          const where = `${path} at ${width}px, ${scheme}`
-          if (overflow > 0) fail(`${where}: the page scrolls sideways by ${overflow}px`)
-          if (problems.length) fail(`${where}: browser console errors: ${problems.slice(0, 3).join(' | ')}`)
+      for (const path of paths) {
+        problems.length = 0
+        await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle0' })
+        if (textSize !== 100) {
+          await page.evaluate((size) => (document.documentElement.style.fontSize = `${size}%`), textSize)
+          await new Promise((r) => setTimeout(r, 150))
         }
-        await page.close()
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+        const where = `${path} at ${width}px, ${scheme}${textSize !== 100 ? `, ${textSize}% text` : ''}`
+        if (overflow > 0) fail(`${where}: the page scrolls sideways by ${overflow}px`)
+        if (problems.length) fail(`${where}: browser console errors: ${problems.slice(0, 3).join(' | ')}`)
       }
+      await page.close()
     }
-    ok(`browser checks ran on ${paths.length} page(s) at 375px and 1440px, light and dark`)
+    ok(`browser checks ran on ${paths.length} page(s): 375px and 1440px in light and dark, and 375px and 768px at 200% text`)
   } finally {
     await browser.close()
   }
