@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" role="img" aria-label="Demo image: a five-stage journey map of a disrupted crossing">
+  <rect width="1600" height="700" fill="#ffffff"/>
+  <text x="80" y="90" font-family="system-ui, sans-serif" font-size="40" font-weight="700" fill="#171717">Disrupted crossing: journey map (demo)</text>
+  <g font-family="system-ui, sans-serif" font-size="26" fill="#171717">
+    <rect x="80" y="160" width="260" height="120" rx="14" fill="#DDF1F2"/><text x="210" y="228" text-anchor="middle">Notice arrives</text>
+    <rect x="380" y="160" width="260" height="120" rx="14" fill="#DDF1F2"/><text x="510" y="228" text-anchor="middle">Looks for options</text>
+    <rect x="680" y="160" width="260" height="120" rx="14" fill="#FBD5D5"/><text x="810" y="228" text-anchor="middle">Phones instead</text>
+    <rect x="980" y="160" width="260" height="120" rx="14" fill="#FBD5D5"/><text x="1110" y="228" text-anchor="middle">Waits on hold</text>
+    <rect x="1280" y="160" width="240" height="120" rx="14" fill="#DDF1F2"/><text x="1400" y="228" text-anchor="middle">Boards later</text>
+  </g>
+  <path d="M110 520 C 300 440, 450 450, 510 470 S 700 620, 810 610 S 1000 640, 1110 620 S 1300 430, 1400 420" fill="none" stroke="#0E7C86" stroke-width="8"/>
+  <text x="80" y="660" font-family="system-ui, sans-serif" font-size="24" fill="#4d4d4d">Emotion across the journey. The low point is the phone queue.</text>
+</svg>

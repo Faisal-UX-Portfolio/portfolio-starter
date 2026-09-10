@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'd=\"${CLAUDE_PROJECT_DIR:-.}\"; [ -x \"$d/.claude/hooks/walkthrough-drift.sh\" ] && exec \"$d/.claude/hooks/walkthrough-drift.sh\"'",
+            "timeout": 10,
+            "statusMessage": "Checking the walkthrough is still current"
+          }
+        ]
+      }
+    ]
+  }
+}

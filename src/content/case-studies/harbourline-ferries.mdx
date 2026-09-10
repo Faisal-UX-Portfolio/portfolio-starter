@@ -1,0 +1,65 @@
+import { DecisionLog } from '@/components/case-study/DecisionLog'
+import { Metric } from '@/components/case-study/Metric'
+import { ArtifactViewer } from '@/components/ui/ArtifactViewer'
+
+> **This is a demo case study.** Harbourline Ferries is fictional, and so is every number on this page. It is here so you can review the design with realistic content, and to show every building block a case study can use. Replace it with your own work.
+
+## Overview
+
+Harbourline runs six ferry routes between the mainland and three islands. When weather or a mechanical fault cancels a sailing, every passenger on it needs a new one, and almost all of them used to phone.
+
+I joined as Lead Product Designer for twelve weeks to find out why self-service was failing, and to fix it.
+
+## The problem
+
+On a disrupted day, the phone queue reached <Metric note="average wait across the ten worst disruption days of the previous winter, from the contact centre's own reporting">47 minutes</Metric>. Passengers were stuck on a harbour wall, on hold, while the app showed them a generic cancellation banner and nothing else.
+
+### What I was asked to do
+
+- Understand why passengers phoned instead of using the app
+- Design a way to rebook a disrupted journey without calling
+- Give crew on the quayside something useful to say
+
+## Research
+
+I spent two disruption days on the quayside with crew, and ran eleven interviews with passengers who had been caught out that winter.
+
+![A journey map of a disrupted crossing, from the cancellation notice to boarding a later sailing](/case-studies/harbourline-ferries/journey-map.svg)
+
+Three things came up again and again:
+
+1. The cancellation message said what had happened, but not what to do next
+2. Rebooking in the app meant cancelling first, and nobody trusted that they would get a seat back
+3. Crew had no more information than passengers did
+
+| Finding | Passengers affected | Evidence |
+| --- | --- | --- |
+| No next step in the message | Almost all | Interviews, call recordings |
+| Fear of losing the booking | Most | Interviews |
+| Crew as uninformed as passengers | Everyone on the quay | Observation |
+
+## Design
+
+<DecisionLog
+  title="Rebook in place, never cancel first"
+  chose="A single 'Move to another sailing' action that holds the original booking until the new one is confirmed."
+  rejected="Keeping the existing cancel-then-rebook flow and explaining it better."
+  because="Research showed the fear of losing a seat, not the number of steps, was what sent people to the phone. No amount of explanation fixes a flow people are right to distrust."
+/>
+
+The rebooking flow puts the next three available sailings first, with the one leaving soonest highlighted.
+
+<ArtifactViewer
+  src="/case-studies/harbourline-ferries/rebooking-flow.svg"
+  title="Rebooking flow, final prototype"
+  label="Prototype"
+  footer="Demo artefact · Harbourline Ferries"
+/>
+
+## Outcome
+
+In the pilot on two routes, rebooking a disrupted journey took <Metric note="median time from opening the disruption notice to a confirmed new sailing, across the pilot routes">50 seconds</Metric> in the app, against 14 minutes on the phone.
+
+## What I would do next
+
+Extend the disruption message to crew handsets, so passengers and crew see the same options at the same moment.

@@ -1,0 +1,65 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // ── Production worker ──
+  // Built from the `main` branch by Cloudflare's Git integration (Workers
+  // Builds). This name must match the Worker name in the Cloudflare
+  // dashboard exactly, or builds fail and Cloudflare opens config-drift
+  // pull requests.
+  "name": "portfolio",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    // Files under public/ are normally served by Cloudflare's asset layer
+    // before the Worker runs, so the middleware (and therefore the
+    // passphrase) never sees them. These prefixes go through the Worker
+    // first, so protected case study images, the CV and the one-pager PDFs
+    // are covered by the same passphrase as the pages. Anything new under
+    // public/ that should be protected needs its prefix adding here, in
+    // both blocks. `npm run check:security` fails if these go missing.
+    "run_worker_first": ["/case-studies/*", "/documents/*", "/one-pagers/*"]
+  },
+  "observability": {
+    "enabled": true
+  },
+
+  // ── Custom domain (optional, off by default) ──
+  // The site lives on its free *.workers.dev address until you choose to
+  // connect a domain. Uncommenting this block is the deliberate cutover
+  // step described in GO-LIVE.md; once uncommented, never remove it again,
+  // because a deploy without the route in config can silently detach the
+  // domain.
+  // "routes": [
+  //   { "pattern": "your-domain.com", "custom_domain": true }
+  // ],
+
+  // ── Staging worker ──
+  // Built from the `staging` branch (the deploy command adds --env staging).
+  // No routes on purpose: staging lives on its *.workers.dev URL and can
+  // never touch a live domain. Keys are repeated rather than inherited so a
+  // Wrangler inheritance quirk can never break the staging build.
+  "env": {
+    "staging": {
+      "name": "portfolio-staging",
+      // routes is inheritable: without this explicit empty override,
+      // staging would inherit production's custom domain once one exists,
+      // fail to claim it, and disable its own workers.dev URL.
+      "routes": [],
+      "workers_dev": true,
+      "main": ".open-next/worker.js",
+      "compatibility_date": "2026-06-01",
+      "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS",
+        "run_worker_first": ["/case-studies/*", "/documents/*", "/one-pagers/*"]
+      },
+      "observability": {
+        "enabled": true
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Demo image: a stylised ferry route between two harbours">
+  <rect width="1600" height="1000" fill="#DDF1F2"/>
+  <path d="M0 720 C 300 680, 500 760, 800 720 S 1300 680, 1600 720 V1000 H0Z" fill="#0E7C86" opacity="0.25"/>
+  <path d="M0 800 C 300 760, 500 840, 800 800 S 1300 760, 1600 800 V1000 H0Z" fill="#0E7C86" opacity="0.35"/>
+  <rect x="120" y="560" width="260" height="160" rx="16" fill="#0B5F66"/>
+  <rect x="1220" y="560" width="260" height="160" rx="16" fill="#0B5F66"/>
+  <path d="M380 600 C 700 380, 900 380, 1220 600" fill="none" stroke="#0E7C86" stroke-width="10" stroke-dasharray="28 22"/>
+  <g transform="translate(720 420)">
+    <path d="M0 60 H160 L130 110 H30Z" fill="#0B5F66"/>
+    <rect x="40" y="20" width="80" height="40" rx="6" fill="#0E7C86"/>
+  </g>
+  <text x="800" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="56" font-weight="700" fill="#0B5F66">Demo image</text>
+  <text x="800" y="270" text-anchor="middle" font-family="system-ui, sans-serif" font-size="32" fill="#0B5F66">Replace with your own cover</text>
+</svg>
