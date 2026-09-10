@@ -41,6 +41,13 @@ test('a correctly signed but non-canonical payload is rejected', async () => {
   assert.equal(await verifyCookieValue(SECRET, 'study-a', value), false)
 })
 
+test('a signature with an extra or altered character is rejected', async () => {
+  const value = await signCookieValue(SECRET, ['study-a'])
+  for (const forged of [`${value}0`, `${value}z`, value.slice(0, -2) + 'zz', value.toUpperCase()]) {
+    assert.equal(await verifyCookieValue(SECRET, 'study-a', forged), false, forged)
+  }
+})
+
 test('malformed values are rejected rather than throwing', async () => {
   for (const value of ['', '.', 'granted_study-a', 'granted_study-a.', 'granted_study-a.zz', 'x.y', 'granted_.abc']) {
     assert.equal(await verifyCookieValue(SECRET, 'study-a', value), false, `accepted ${JSON.stringify(value)}`)

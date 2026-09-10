@@ -53,10 +53,10 @@ async function unlockAttempt(slug, pass, headers = clientHeaders) {
   })
 }
 
-function firstImage(slug) {
+function firstImage(slug, pattern = /\.(png|jpe?g|webp|gif|svg|avif)$/i) {
   const dir = `public/case-studies/${slug}`
   if (!existsSync(dir)) return undefined
-  const file = readdirSync(dir).find((n) => /\.(png|jpe?g|webp|gif|svg|avif)$/i.test(n))
+  const file = readdirSync(dir).find((n) => pattern.test(n))
   return file && `/case-studies/${slug}/${file}`
 }
 
@@ -127,6 +127,26 @@ if (locked) {
       ...(study.slug.includes('-') ? [`/case-studies/${study.slug.replace('-', '%2D')}`] : []),
       ...(image ? [image.replace(`${study.slug}/`, `${study.slug}%2F`), image.replace(study.slug, study.slug.toUpperCase())] : []),
     ]
+    if (image) {
+      const rest = image.slice('/case-studies/'.length)
+      disguised.push(
+        `/case-studies/x/..%2f${rest}`,
+        `/x/..%2fcase-studies/${rest}`,
+        `/case-studies/.%2f${rest}`,
+        `/_next/static/..%2f..%2fcase-studies/${rest}`
+      )
+      if (study.slug.includes('s')) disguised.push(image.replace(study.slug, study.slug.replace('s', '%C5%BF')))
+    }
+    // The image optimiser fetches files without asking the gate; it must not exist
+    const raster = firstImage(study.slug, /\.(png|jpe?g|webp|avif)$/i)
+    if (raster) {
+      disguised.push(
+        `/_next/image?url=${encodeURIComponent(raster)}&w=640&q=75`,
+        `/_next/image?url=${encodeURIComponent(`/_next/static/media/../..${raster}`)}&w=640&q=75`
+      )
+    } else {
+      note(`${study.slug} has no PNG, JPEG, WebP or AVIF image, so the image optimiser probe was skipped`)
+    }
     for (const path of disguised) {
       const res = await get(path)
       expect(res.status !== 200, `${path} does not bypass the passphrase (answered ${res.status})`)

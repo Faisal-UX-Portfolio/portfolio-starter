@@ -7,7 +7,7 @@
   // dashboard exactly, or builds fail and Cloudflare opens config-drift
   // pull requests.
   "name": "portfolio",
-  "main": ".open-next/worker.js",
+  "main": "worker.mjs",
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
@@ -49,7 +49,7 @@
       // fail to claim it, and disable its own workers.dev URL.
       "routes": [],
       "workers_dev": true,
-      "main": ".open-next/worker.js",
+      "main": "worker.mjs",
       "compatibility_date": "2026-06-01",
       "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
       "assets": {

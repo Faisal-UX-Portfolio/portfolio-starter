@@ -4,21 +4,33 @@
  */
 
 /**
- * The request path as the router will see it: percent-decoded, with runs of
- * slashes collapsed. Returns null for malformed encoding, which the
- * middleware rejects outright.
+ * The request path as the router and the file server will see it:
+ * percent-decoded, with runs of slashes collapsed. Returns null for any
+ * path that could mean something other than what it says, which the
+ * middleware refuses with a 400.
  *
  * Matching must happen on this, never on the raw path. Next.js decodes a
- * path before routing it and before serving a file, so a gate that compared
- * the still-encoded form let /case-studies/harbourline%2Dferries (and its
- * images) straight past the passphrase.
+ * path before routing it and before serving a file, so a gate comparing the
+ * still-encoded form let /case-studies/harbourline%2Dferries through. And
+ * because an encoded slash hides a `..` from the URL parser, decoding alone
+ * is not enough: /case-studies/x/..%2fharbourline-ferries/cover.svg decodes
+ * to a path the file server resolves to the protected image.
+ *
+ * So after decoding, anything no legitimate address on this site needs is
+ * refused outright rather than interpreted: dot segments and backslashes
+ * (both are ways of walking to another folder), and anything outside
+ * printable ASCII (Unicode letters that a case-insensitive file system
+ * folds into ordinary ones, spaces, control characters).
  */
 export function normalisePath(raw: string): string | null {
+  let path: string
   try {
-    return decodeURIComponent(raw).replace(/\/{2,}/g, '/')
+    path = decodeURIComponent(raw)
   } catch {
     return null
   }
+  if (/[^\x21-\x7e]/.test(path) || path.includes('\\') || /(^|\/)\.\.?(\/|$)/.test(path)) return null
+  return path.replace(/\/{2,}/g, '/')
 }
 
 /**

@@ -7,7 +7,8 @@
  * a CV longer than two pages.
  *
  * Your phone number deliberately lives in CV_PHONE in .env.local rather
- * than here, so it reaches the PDF without ever appearing on the live site.
+ * than here, so it stays off the site's pages. It does go into the PDF,
+ * which anyone can download, so leave it out unless you want it public.
  *
  * Everything below is placeholder content. The setup-portfolio skill
  * replaces it with yours.

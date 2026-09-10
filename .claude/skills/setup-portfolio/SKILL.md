@@ -196,8 +196,10 @@ remove. Never shrink the type or margins. Show them
 its own right: it is what employers will download.
 
 **Phone** (optional): if they want it on the PDF, it goes in `CV_PHONE` in
-`.env.local`, which never reaches the live site. Ask them to add it to the
-file themselves, then regenerate.
+`.env.local`, which keeps it off the site's pages. Be clear that the PDF
+itself is public: anyone who downloads the CV sees the number. If they are
+happy with that, ask them to add it to the file themselves, then
+regenerate.
 
 ### 3.3 Confirm the basics
 

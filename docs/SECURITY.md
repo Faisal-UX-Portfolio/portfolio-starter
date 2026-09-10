@@ -19,7 +19,7 @@ someone you gave the passphrase to from passing it on.
 
 | Asset | How |
 |---|---|
-| A protected study's page, one-pager and images | Middleware redirects to its unlock page without a valid cookie. Images are covered because they live in `public/case-studies/<slug>/`, which Cloudflare routes through the Worker. |
+| A protected study's page, one-pager and images | Middleware redirects to its unlock page without a valid cookie. Images are covered because they live in `public/case-studies/<slug>/`, which Cloudflare routes through the Worker. The middleware matches the decoded path and refuses any address that could mean another one (encoded dot segments, backslashes, non-ASCII), and the image optimiser, which would fetch files around the gate, is switched off (`worker.mjs`). |
 | Everything, while locked | The same middleware redirects every path except `/unlock`, `/api/unlock`, `/robots.txt` and `/sitemap.xml`. Files under `/case-studies/`, `/documents/` and `/one-pagers/` are covered too. |
 | The passphrase | Only ever compared as a keyed hash, so response timing reveals nothing. Five attempts per address per ten minutes, and a half-second delay after each wrong one. |
 | The access cookie | Signed with `SESSION_SECRET`; any change to it, including adding another study to it, breaks the signature. HttpOnly (page scripts cannot read it), Secure on HTTPS, SameSite=Lax, lasts 24 hours. |
@@ -43,6 +43,8 @@ someone you gave the passphrase to from passing it on.
 - **Files under `public/` outside the three covered prefixes are public**,
   even while locked: the favicon and the share image. Anything private goes
   under `/documents/` or a study's folder.
+- **The CV PDF is public** whenever the site is open. A phone number put
+  in `CV_PHONE` stays off the pages but is printed in that PDF.
 - **The titles of protected studies are public**: they appear on the home
   page cards and in `llms.txt`, so visitors know the work exists. Their
   content, covers and outcomes do not.

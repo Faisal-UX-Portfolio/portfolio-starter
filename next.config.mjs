@@ -53,6 +53,10 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+  // The site uses plain <img>, never next/image. The optimiser endpoint is
+  // also refused outright (middleware.ts and worker.mjs), because it serves
+  // files without consulting the passphrase gate.
+  images: { unoptimized: true },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },

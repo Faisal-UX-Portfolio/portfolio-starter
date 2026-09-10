@@ -62,7 +62,10 @@ async function verifiedSlugs(secret: string, value: string): Promise<string[] | 
   if (dotIndex === -1) return null
   const payload = value.slice(0, dotIndex)
   const sigHex = value.slice(dotIndex + 1)
-  if (!sigHex) return null
+  // Exactly an HMAC-SHA256 in hex. Anything else is refused before it is
+  // parsed, rather than parsed leniently (an odd trailing character used to
+  // be dropped, and non-hex pairs read as zero).
+  if (!/^[0-9a-f]{64}$/.test(sigHex)) return null
   try {
     const sigBytes = new Uint8Array(sigHex.match(/.{2}/g)!.map((b) => parseInt(b, 16)))
     const key = await importKey(secret)

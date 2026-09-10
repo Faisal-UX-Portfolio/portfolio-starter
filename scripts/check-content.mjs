@@ -58,6 +58,9 @@ for (const study of caseStudies) {
       if (study.protected) errors.push(`${where}: ${url} is hosted elsewhere, so the passphrase cannot protect it. Put the image in public${folder}`)
       continue
     }
+    if (!/^[A-Za-z0-9/._-]+$/.test(url.split(/[?#]/)[0])) {
+      errors.push(`${where}: ${url} has characters the passphrase gate refuses (spaces, accents or symbols). Rename the file using letters, numbers and hyphens.`)
+    }
     if (!existsSync(publicFile(url))) errors.push(`${where}: ${url} does not exist (looked for ${publicFile(url)})`)
     if (!alt || !alt.trim()) errors.push(`${where}: ${url} has no alt text. Describe what the image shows.`)
     if (!url.startsWith(folder)) {

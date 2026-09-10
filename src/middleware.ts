@@ -19,6 +19,14 @@ export async function middleware(request: NextRequest) {
   const pathname = normalisePath(request.nextUrl.pathname)
   if (pathname === null) return new NextResponse('Bad request', { status: 400 })
 
+  // The image optimiser fetches whatever file its url= parameter names
+  // without consulting this gate, so it would hand out protected images.
+  // The site never uses next/image, so the endpoint is switched off here
+  // and, in production, in worker.mjs before OpenNext ever sees it.
+  if (pathname === '/_next/image' || pathname.startsWith('/_next/image/')) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
   // Emergency site-wide lock (src/lib/lockdown.ts). Exact path matching:
   // a loose check guarding the whole site is a hole waiting to be found.
   if (
@@ -47,9 +55,12 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Deliberately wide, because the lockdown branch has to see every route.
+// Deliberately everything, _next included. Excluding /_next/static let
+// /_next/static/..%2f..%2fcase-studies/<slug>/<image> skip the gate, and in
+// production real static files never reach the Worker anyway: the asset
+// layer serves them first, so only odd requests like that one arrive here.
 // Next requires this to be statically analysable, so it cannot depend on
 // LOCKDOWN; when the site is open the body is a cheap check with no I/O.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!favicon.ico).*)'],
 }

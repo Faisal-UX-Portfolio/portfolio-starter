@@ -84,13 +84,17 @@ const mustContain = {
     ["sameSite: 'lax'", 'the SameSite cookie flag'],
     ["secure: process.env.NODE_ENV === 'production'", 'the Secure cookie flag in production'],
   ],
+  'worker.mjs': [["pathname === '/_next/image'", 'the image optimiser being switched off in production']],
   'src/lib/cookie-auth.ts': [
+    ['/^[0-9a-f]{64}$/.test(sigHex)', 'the strict signature format check'],
     ["crypto.subtle.verify('HMAC'", 'signature verification'],
     ['payload === payloadFor(slugs)', 'the canonical payload check'],
   ],
   'src/middleware.ts': [
     ['LOCKDOWN_OPEN_PATHS.has(pathname)', 'the exact-match lockdown allowlist'],
     ['normalisePath(request.nextUrl.pathname)', 'decoding the path before matching it'],
+    ["pathname === '/_next/image'", 'the image optimiser being switched off'],
+    ["matcher: ['/((?!favicon.ico).*)']", 'the middleware running on every path, _next included'],
     ['isUnderProtectedBase(matchable, base)', 'the exact, case-insensitive protected path matching'],
   ],
   'src/lib/paths.ts': [['pathname === `${base}/unlock`', 'the exact unlock-page exemption']],
@@ -126,6 +130,8 @@ if (openCount !== 4) errors.push(`LOCKDOWN_OPEN_PATHS in src/lib/lockdown.ts sho
 // Protected files under public/ are only covered if Cloudflare routes them
 // through the Worker, in both the production and staging blocks
 const wrangler = read('wrangler.jsonc')
+const wrapped = wrangler.split('"main": "worker.mjs"').length - 1
+if (wrapped < 2) errors.push(`wrangler.jsonc must set "main": "worker.mjs" in both production and staging (found ${wrapped}); the wrapper switches off the image optimiser, which would otherwise serve protected images`)
 for (const prefix of ['/case-studies/*', '/documents/*', '/one-pagers/*']) {
   const count = wrangler.split(`"${prefix}"`).length - 1
   if (count < 2) errors.push(`wrangler.jsonc must list "${prefix}" in run_worker_first for both production and staging (found ${count})`)

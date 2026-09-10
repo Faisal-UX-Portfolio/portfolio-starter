@@ -28,6 +28,33 @@ test('case and doubled slashes do not get past the gate', () => {
   }
 })
 
+test('paths that could walk to another folder are refused outright', () => {
+  for (const raw of [
+    '/case-studies/x/..%2fsecret/cover.png',
+    '/x/..%2fcase-studies/secret/cover.png',
+    '/case-studies/.%2fsecret/cover.png',
+    '/_next/static/..%2f..%2fcase-studies/secret/cover.png',
+    '/case-studies/%2e%2e/secret',
+    '/case-studies/secret%5ccover.png',
+    '/case-studies/..',
+  ]) {
+    assert.equal(normalisePath(raw), null, raw)
+  }
+})
+
+test('characters outside printable ASCII are refused outright', () => {
+  // U+017F, a long s, which a case-insensitive file system reads as "s"
+  assert.equal(normalisePath('/case-studies/%C5%BFecret/cover.png'), null)
+  assert.equal(normalisePath('/case-studies/secret%00.png'), null)
+  assert.equal(normalisePath('/case-studies/secret/my%20image.png'), null)
+})
+
+test('ordinary paths, including dotted file names, still work', () => {
+  assert.equal(normalisePath('/case-studies/secret/cover.v2.png'), '/case-studies/secret/cover.v2.png')
+  assert.equal(normalisePath('/_next/static/chunks/main-app.js'), '/_next/static/chunks/main-app.js')
+  assert.equal(normalisePath('/'), '/')
+})
+
 test('malformed encoding is refused rather than guessed at', () => {
   assert.equal(normalisePath('/case-studies/secret%E0%A4%A'), null)
   assert.equal(normalisePath('/%'), null)

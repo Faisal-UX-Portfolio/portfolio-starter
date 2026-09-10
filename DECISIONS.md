@@ -46,6 +46,24 @@ independent security review found that matching the raw path let
 images included. `tests/paths.test.ts` and the smoke test both try disguised
 addresses now.
 
+The second review showed decoding alone was not enough. An encoded slash
+hides `..` from the URL parser, so `/case-studies/x/..%2fharbourline-ferries/cover.svg`
+passed the match and the file server then walked to the protected image. The
+middleware now refuses, with a 400, any decoded path containing a dot
+segment, a backslash or a character outside printable ASCII: no legitimate
+address on the site needs them, and refusing is safer than interpreting.
+Image file names are held to the same rule by `npm run check`.
+
+### The image optimiser is switched off
+Next.js's `/_next/image` endpoint fetches whatever local file its `url=`
+parameter names, and OpenNext answers it before the middleware runs, so it
+would serve protected images to anyone. The site uses plain `<img>`
+throughout, so the endpoint is refused in the middleware and, in
+production, by `worker.mjs`, a small wrapper around OpenNext's worker that
+`wrangler.jsonc` points at. The middleware matcher also runs on every path,
+`_next` included, since excluding `/_next/static` let a traversal skip the
+gate.
+
 ### Study facts in a TypeScript file, stories in MDX
 `src/content/studies.ts` holds each study's facts; the MDX file holds the
 story. Considered: frontmatter in each MDX file. Chosen because the facts are
