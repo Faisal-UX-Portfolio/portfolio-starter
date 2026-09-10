@@ -68,3 +68,5 @@ them.
 
 | Date | Scope | Result |
 |---|---|---|
+| 10 September 2026 | Template, whole repository (first review) | **High**: a percent-encoded character in a protected study's address (`harbourline%2Dferries`) read the study, its one-pager and its images without the passphrase. Fixed by matching the decoded path. Low: wording that implied the repository could be public, staging described as private, image case matching. All fixed. |
+| 11 September 2026 | Template, whole repository (second review) | **High**: encoded dot segments (`/case-studies/x/..%2f<slug>/<image>`), traversal under `/_next/static`, and the image optimiser, which fetched files around the gate. Fixed by refusing dot segments, backslashes and non-ASCII after decoding, running the middleware on every path, and switching the optimiser off (`worker.mjs`). Medium: Unicode look-alike letters (closed by the same rule). Low: lenient signature parsing, and docs claiming a CV phone number stays off the live site. All fixed. |
