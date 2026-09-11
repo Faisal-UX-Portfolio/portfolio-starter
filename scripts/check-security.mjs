@@ -8,12 +8,52 @@
  * review: the security-reviewer agent reads the code itself.
  */
 import { execSync, spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { readEnvLocal } from './lib.mjs'
 
 const errors = []
 const warnings = []
 const read = (file) => readFileSync(file, 'utf8')
+const BINARY_FILE = /\.(png|jpe?g|webp|gif|avif|ico|pdf|woff2?|ttf|otf|mp4|mov|zip)$/i
+
+// ── --bundle: after a production build, prove no protected text reached a
+// public file. Everything outside the three prefixes the Worker guards is
+// served straight from Cloudflare's asset layer, passphrase or not. ──
+if (process.argv.includes('--bundle')) {
+  const ASSETS = '.open-next/assets'
+  if (!existsSync(ASSETS)) {
+    console.log(`  FAIL  ${ASSETS} does not exist. Run a production build (npm run build:cf) first.`)
+    process.exit(1)
+  }
+  const { caseStudies } = await import('../src/content/studies.ts')
+  // Letters and digits only, so escaping and spacing in minified code
+  // cannot hide a match
+  const squash = (s) => s.replace(/\\u([0-9a-f]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).toLowerCase().replace(/[^a-z0-9]/g, '')
+  const needles = caseStudies
+    .filter((s) => s.protected)
+    .flatMap((s) => [
+      [s.slug, 'summary', s.summary],
+      [s.slug, 'outcome', s.outcome],
+      [s.slug, 'endorsement', s.endorsement?.quote],
+    ])
+    .filter(([, , text]) => text && squash(text).length >= 20)
+    .map(([slug, field, text]) => [slug, field, squash(text)])
+  const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]))
+  const GUARDED = /^\.open-next\/assets\/(case-studies|documents|one-pagers)\//
+  let scanned = 0
+  for (const file of walk(ASSETS)) {
+    if (GUARDED.test(file) || BINARY_FILE.test(file)) continue
+    scanned++
+    const text = squash(read(file))
+    for (const [slug, field, needle] of needles) {
+      if (text.includes(needle)) errors.push(`${file} is public and contains the ${field} of protected study "${slug}"`)
+    }
+  }
+  for (const e of errors) console.log(`  FAIL  ${e}`)
+  console.log(errors.length ? `\nProtected text is in ${errors.length} public place(s). Find the browser component that imports study data.` : `No protected text in ${scanned} public build files (${needles.length} passages checked).`)
+  process.exit(errors.length ? 1 : 0)
+}
 
 // ── 1. Secrets never tracked by git ──
 // Committed files plus new ones git would pick up, so this catches a
@@ -47,9 +87,8 @@ const SECRET_SHAPES = [
   [/\bsk-(ant-)?[A-Za-z0-9_-]{20,}\b/, 'an API key'],
   [/\bxox[baprs]-[A-Za-z0-9-]{10,}/, 'a Slack token'],
 ]
-const BINARY = /\.(png|jpe?g|webp|gif|avif|ico|pdf|woff2?|ttf|otf|mp4|mov|zip)$/i
 for (const file of tracked) {
-  if (BINARY.test(file) || !existsSync(file) || statSync(file).size > 2_000_000) continue
+  if (BINARY_FILE.test(file) || !existsSync(file) || statSync(file).size > 2_000_000) continue
   const text = read(file)
   for (const [pattern, label] of SECRET_SHAPES) {
     if (pattern.test(text)) errors.push(`${file} contains what looks like ${label}`)
@@ -77,6 +116,7 @@ const mustContain = {
     ['MAX_ATTEMPTS = 5', 'the rate limit of 5 attempts'],
     ['10 * 60 * 1000', 'the 10 minute rate limit window'],
     ['hmacHex(secret, password)', 'the timing-safe passphrase comparison'],
+    ['cookieKey(secret, expected)', 'signing cookies with a key that includes the passphrase'],
     ['setTimeout(r, 500)', 'the delay after a wrong passphrase'],
     ['password.length > 64', 'the passphrase length cap'],
     ['!allProtectedSlugs.includes(slug)', 'the check that the slug is a real protected item'],
@@ -88,7 +128,8 @@ const mustContain = {
   'src/lib/cookie-auth.ts': [
     ['/^[0-9a-f]{64}$/.test(sigHex)', 'the strict signature format check'],
     ["crypto.subtle.verify('HMAC'", 'signature verification'],
-    ['payload === payloadFor(slugs)', 'the canonical payload check'],
+    ['payload !== payloadFor(slugs, issuedAt)', 'the canonical payload check'],
+    ['age > MAX_AGE_SECONDS', 'the server-side cookie expiry'],
   ],
   'src/middleware.ts': [
     ['LOCKDOWN_OPEN_PATHS.has(pathname)', 'the exact-match lockdown allowlist'],
@@ -150,6 +191,33 @@ for (const file of tracked.filter((f) => f.startsWith('src/') && /\.tsx?$/.test(
   const text = read(file)
   if (/^['"]use client['"]/m.test(text) && /process\.env\.(?!NEXT_PUBLIC_|NODE_ENV)/.test(text)) {
     errors.push(`${file} is a browser component but reads a server environment variable`)
+  }
+}
+
+// Study data must never be imported, however indirectly, by a browser
+// component: everything it imports is compiled into public JavaScript under
+// /_next/static, which the passphrase cannot cover (docs/SECURITY.md)
+const sources = tracked.filter((f) => f.startsWith('src/') && /\.(tsx?|mdx)$/.test(f))
+const importsOf = (file) =>
+  // A type-only import is erased at compile time and carries no data
+  [...read(file).matchAll(/^\s*(?:import|export)(?!\s+type\b)\b[^'"]*?from\s*['"]([^'"]+)['"]/gm)]
+    .map(([, spec]) => (spec.startsWith('@/') ? `src/${spec.slice(2)}` : spec.startsWith('.') ? join(dirname(file), spec) : null))
+    .filter(Boolean)
+    .map((base) => ['', '.ts', '.tsx', '.mdx', '/index.ts', '/index.tsx'].map((ext) => base + ext).find((f) => sources.includes(f)))
+    .filter(Boolean)
+const studyData = new Set(sources.filter((f) => f === 'src/content/studies.ts' || f.startsWith('src/content/case-studies/')))
+for (let grew = true; grew; ) {
+  grew = false
+  for (const file of sources) {
+    if (!studyData.has(file) && importsOf(file).some((dep) => studyData.has(dep))) {
+      studyData.add(file)
+      grew = true
+    }
+  }
+}
+for (const file of sources) {
+  if (/^['"]use client['"]/m.test(read(file)) && importsOf(file).some((dep) => studyData.has(dep))) {
+    errors.push(`${file} is a browser component that imports study data, so every study's text (protected ones included) would be published in a public script. Read the data in a server component and pass this one only the strings it needs.`)
   }
 }
 

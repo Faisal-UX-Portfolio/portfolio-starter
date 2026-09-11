@@ -117,7 +117,12 @@ of setup steps 6 and 8. A High security finding blocks deployment.
   minutes), timing-safe comparison, 500ms delay after a failure, input
   validation with a length cap, and generic error messages.
 - **The access cookie** stays HttpOnly, Secure in production, SameSite=Lax,
-  signed with `SESSION_SECRET`.
+  signed with a key made from `SESSION_SECRET` and the passphrase, and
+  refused by the server 24 hours after the signed issue time.
+- **Study data stays on the server.** No `'use client'` file imports
+  `@/lib/case-studies` or `@/content/`; a browser component gets only the
+  strings it needs as props. `npm run check:security` enforces this and,
+  after a build, scans the public files for protected text.
 - **The Content-Security-Policy** in `next.config.mjs` may gain directives
   but not lose them. Google's analytics hosts are added only when
   `NEXT_PUBLIC_GA_ID` is set. Any new third-party script, font or embed

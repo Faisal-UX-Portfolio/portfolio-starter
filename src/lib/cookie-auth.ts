@@ -26,17 +26,30 @@ async function importKey(secret: string): Promise<CryptoKey> {
   )
 }
 
+/** How long an unlock lasts. Enforced from the signed time, not the browser. */
+export const MAX_AGE_SECONDS = 60 * 60 * 24
+// Allowance for a clock slightly ahead of the one checking the cookie
+const CLOCK_SKEW_SECONDS = 60
+
+/**
+ * The key cookies are signed with. It includes the passphrase, so changing
+ * the passphrase signs everyone out, as does changing SESSION_SECRET.
+ */
+export function cookieKey(sessionSecret: string, passphrase: string): string {
+  return `${sessionSecret}|${passphrase}`
+}
+
 // Underscore/comma separators keep the value cookie-safe: Next.js
 // URL-encodes characters like ':' on write, which would break the
 // comparison on read.
-function payloadFor(slugs: string[]): string {
-  return `granted_${[...new Set(slugs)].sort().join(',')}`
+function payloadFor(slugs: string[], issuedAt: number): string {
+  return `granted_${[...new Set(slugs)].sort().join(',')}_t${issuedAt}`
 }
 
-function slugsFromPayload(payload: string): string[] {
-  if (!payload.startsWith('granted_')) return []
-  const rest = payload.slice('granted_'.length)
-  return rest ? rest.split(',') : []
+function parsePayload(payload: string): { slugs: string[]; issuedAt: number } | null {
+  const match = /^granted_([a-z0-9,-]*)_t(\d{1,12})$/.exec(payload)
+  if (!match) return null
+  return { slugs: match[1] ? match[1].split(',') : [], issuedAt: Number(match[2]) }
 }
 
 /**
@@ -50,14 +63,15 @@ export async function hmacHex(secret: string, value: string): Promise<string> {
   return toHex(sig)
 }
 
-export async function signCookieValue(secret: string, slugs: string[]): Promise<string> {
-  const payload = payloadFor(slugs)
+/** `now` is in milliseconds, like Date.now(); tests pass their own clock. */
+export async function signCookieValue(secret: string, slugs: string[], now = Date.now()): Promise<string> {
+  const payload = payloadFor(slugs, Math.floor(now / 1000))
   const key = await importKey(secret)
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
   return `${payload}.${toHex(sig)}`
 }
 
-async function verifiedSlugs(secret: string, value: string): Promise<string[] | null> {
+async function verifiedSlugs(secret: string, value: string, now: number): Promise<string[] | null> {
   const dotIndex = value.lastIndexOf('.')
   if (dotIndex === -1) return null
   const payload = value.slice(0, dotIndex)
@@ -71,11 +85,18 @@ async function verifiedSlugs(secret: string, value: string): Promise<string[] | 
     const key = await importKey(secret)
     const valid = await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(payload))
     if (!valid) return null
-    const slugs = slugsFromPayload(payload)
+    const parsed = parsePayload(payload)
+    if (!parsed) return null
+    const { slugs, issuedAt } = parsed
     // Reject a payload that doesn't round-trip to its own canonical form
     // (e.g. unsorted or duplicated), since that would mean it was never
     // produced by signCookieValue.
-    return payload === payloadFor(slugs) ? slugs : null
+    if (payload !== payloadFor(slugs, issuedAt)) return null
+    // The browser is told to drop the cookie after a day, but a copied
+    // cookie would otherwise work for ever. The signed time decides.
+    const age = Math.floor(now / 1000) - issuedAt
+    if (age > MAX_AGE_SECONDS || age < -CLOCK_SKEW_SECONDS) return null
+    return slugs
   } catch {
     return null
   }
@@ -84,14 +105,15 @@ async function verifiedSlugs(secret: string, value: string): Promise<string[] | 
 export async function verifyCookieValue(
   secret: string,
   slug: string,
-  value: string
+  value: string,
+  now = Date.now()
 ): Promise<boolean> {
-  const slugs = await verifiedSlugs(secret, value)
+  const slugs = await verifiedSlugs(secret, value, now)
   return slugs?.includes(slug) ?? false
 }
 
 /** The slugs already granted by a (possibly absent or invalid) cookie value. */
-export async function grantedSlugsIn(secret: string, value: string | undefined): Promise<string[]> {
+export async function grantedSlugsIn(secret: string, value: string | undefined, now = Date.now()): Promise<string[]> {
   if (!value) return []
-  return (await verifiedSlugs(secret, value)) ?? []
+  return (await verifiedSlugs(secret, value, now)) ?? []
 }

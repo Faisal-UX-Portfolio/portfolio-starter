@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyCookieValue, ACCESS_COOKIE } from '@/lib/cookie-auth'
+import { verifyCookieValue, cookieKey, ACCESS_COOKIE } from '@/lib/cookie-auth'
 import { allProtectedSlugs, pathForSlug } from '@/lib/protected-routes'
 import { isUnderProtectedBase, normalisePath } from '@/lib/paths'
 import { LOCKDOWN, LOCKDOWN_SLUG, LOCKDOWN_PATH, LOCKDOWN_OPEN_PATHS } from '@/lib/lockdown'
@@ -9,8 +9,9 @@ import { LOCKDOWN, LOCKDOWN_SLUG, LOCKDOWN_PATH, LOCKDOWN_OPEN_PATHS } from '@/l
 async function hasGrant(request: NextRequest, slug: string): Promise<boolean> {
   const cookie = request.cookies.get(ACCESS_COOKIE)
   const secret = process.env.SESSION_SECRET
-  if (!secret || !cookie?.value) return false
-  return verifyCookieValue(secret, slug, cookie.value)
+  const passphrase = process.env.PORTFOLIO_PASSWORD
+  if (!secret || !passphrase || !cookie?.value) return false
+  return verifyCookieValue(cookieKey(secret, passphrase), slug, cookie.value)
 }
 
 export async function middleware(request: NextRequest) {

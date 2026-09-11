@@ -77,8 +77,11 @@ they are filled it sends them to `/api/unlock`, which:
 - refuses more than five attempts from one address in ten minutes, and waits
   half a second after every wrong guess
 - compares the passphrase in a way that leaks nothing through timing
-- on success, sets a cookie that lasts 24 hours, signed with
-  `SESSION_SECRET` so it cannot be forged or edited
+- on success, sets a cookie signed with a key made from `SESSION_SECRET`
+  and the passphrase, so it cannot be forged or edited, and changing the
+  passphrase signs everyone out
+- the cookie carries the time it was signed, and the server refuses it
+  after 24 hours even if someone copied it out of a browser
 
 One cookie can hold several unlocked studies. Unlocking a locked site
 unlocks everything.

@@ -47,6 +47,11 @@ if (build) {
   } else {
     const { status } = spawnSync('npm', ['run', 'build:cf'], { stdio: 'inherit' })
     results.push(['Production build', status === 0 ? 'pass' : 'FAIL'])
+    if (status === 0) {
+      console.log('\n── Protected text in public files ──')
+      const scan = spawnSync('node', ['scripts/check-security.mjs', '--bundle'], { stdio: 'inherit' })
+      results.push(['Protected text in public files', scan.status === 0 ? 'pass' : 'FAIL'])
+    }
     console.log('After a build, delete the .next folder before starting the dev server again.')
   }
 }

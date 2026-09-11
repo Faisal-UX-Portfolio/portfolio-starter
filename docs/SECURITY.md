@@ -22,7 +22,8 @@ someone you gave the passphrase to from passing it on.
 | A protected study's page, one-pager and images | Middleware redirects to its unlock page without a valid cookie. Images are covered because they live in `public/case-studies/<slug>/`, which Cloudflare routes through the Worker. The middleware matches the decoded path and refuses any address that could mean another one (encoded dot segments, backslashes, non-ASCII), and the image optimiser, which would fetch files around the gate, is switched off (`worker.mjs`). |
 | Everything, while locked | The same middleware redirects every path except `/unlock`, `/api/unlock`, `/robots.txt` and `/sitemap.xml`. Files under `/case-studies/`, `/documents/` and `/one-pagers/` are covered too. |
 | The passphrase | Only ever compared as a keyed hash, so response timing reveals nothing. Five attempts per address per ten minutes, and a half-second delay after each wrong one. |
-| The access cookie | Signed with `SESSION_SECRET`; any change to it, including adding another study to it, breaks the signature. HttpOnly (page scripts cannot read it), Secure on HTTPS, SameSite=Lax, lasts 24 hours. |
+| The access cookie | Signed with a key made from `SESSION_SECRET` and the passphrase; any change to it, including adding another study to it, breaks the signature. It carries its signed issue time and the server refuses it after 24 hours, even if it was copied out of a browser. Changing the passphrase signs everyone out. HttpOnly (page scripts cannot read it), Secure on HTTPS, SameSite=Lax. |
+| Protected text in the site's scripts | Study data is only ever read by server components, so a protected study's summary, outcome and quotes never reach the public JavaScript files under `/_next/static`, which the passphrase cannot cover. `npm run check:security` refuses a browser component that imports study data, and after a build it scans every public file for protected text. |
 | Your secrets | `.env.local` locally (gitignored, readable only by you) and Cloudflare secrets in production. Never in the repository; the security check fails if one appears. |
 | Visitors | A strict Content-Security-Policy, no framing, no content sniffing, HTTPS enforced. No analytics cookie before consent. |
 
@@ -30,7 +31,8 @@ someone you gave the passphrase to from passing it on.
 
 - **The passphrase is shared.** Anyone who has it can pass it on. If that
   matters, change it (below).
-- **There is no sign-out.** An unlocked browser stays unlocked for 24 hours.
+- **There is no sign-out button.** An unlocked browser stays unlocked for
+  24 hours, or until you change the passphrase.
 - **The rate limit counts per server instance**, and Cloudflare runs many,
   so a determined attacker spread across many instances gets more than five
   guesses. The four-word passphrase is still billions of combinations. With
@@ -54,7 +56,7 @@ someone you gave the passphrase to from passing it on.
 | What happened | Do this |
 |---|---|
 | Something private is visible | Say "Lockdown". Investigate afterwards. |
-| The passphrase leaked further than you wanted | Change `PORTFOLIO_PASSWORD` in `.env.local` and as a secret on **both** Workers, then trigger a build of each (secrets are picked up on the next build). Tell the people who should still have it. |
+| The passphrase leaked further than you wanted | Change `PORTFOLIO_PASSWORD` in `.env.local` and as a secret on **both** Workers, then trigger a build of each (secrets are picked up on the next build). Everyone already unlocked is signed out. Tell the people who should still have it. |
 | `SESSION_SECRET` leaked | Generate a new one for each Worker and rebuild. Every existing unlock stops working, which is the point. |
 | A secret was committed to GitHub | Change it immediately as above: deleting the commit is not enough, because it may already have been copied. Then remove it from the repository. |
 | A dependency has a vulnerability | `npm audit fix`, run `npm run check`, ship it. |
@@ -70,3 +72,4 @@ them.
 |---|---|---|
 | 10 September 2026 | Template, whole repository (first review) | **High**: a percent-encoded character in a protected study's address (`harbourline%2Dferries`) read the study, its one-pager and its images without the passphrase. Fixed by matching the decoded path. Low: wording that implied the repository could be public, staging described as private, image case matching. All fixed. |
 | 11 September 2026 | Template, whole repository (second review) | **High**: encoded dot segments (`/case-studies/x/..%2f<slug>/<image>`), traversal under `/_next/static`, and the image optimiser, which fetched files around the gate. Fixed by refusing dot segments, backslashes and non-ASCII after decoding, running the middleware on every path, and switching the optimiser off (`worker.mjs`). Medium: Unicode look-alike letters (closed by the same rule). Low: lenient signature parsing, and docs claiming a CV phone number stays off the live site. All fixed. |
+| 11 September 2026 | Template, whole repository (third review) | **High**: the unlock page was a browser component importing study data, so every study's summary, outcome and quote, protected ones included, was compiled into a public script under `/_next/static`, even while locked. Fixed by making it a server component; `check:security` now refuses any browser component that imports study data and, after a build, scans public files for protected text. Medium: the cookie never expired on the server and survived a passphrase change. Fixed with a signed issue time (24 hours) and a key that includes the passphrase. Low: protected summaries on the cards and the next-study link, and `/cdn-cgi/` in local previews. All fixed. |

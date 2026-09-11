@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { signCookieValue, hmacHex, grantedSlugsIn, ACCESS_COOKIE } from '@/lib/cookie-auth'
+import { signCookieValue, hmacHex, grantedSlugsIn, cookieKey, ACCESS_COOKIE, MAX_AGE_SECONDS } from '@/lib/cookie-auth'
 import { allProtectedSlugs } from '@/lib/protected-routes'
 import { LOCKDOWN_SLUG } from '@/lib/lockdown'
 
@@ -75,12 +75,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Incorrect passphrase' }, { status: 401 })
     }
 
-    const priorSlugs = await grantedSlugsIn(secret, req.cookies.get(ACCESS_COOKIE)?.value)
+    const key = cookieKey(secret, expected)
+    const priorSlugs = await grantedSlugsIn(key, req.cookies.get(ACCESS_COOKIE)?.value)
     // Passing the site-wide lock grants everything: every protected item
     // shares one passphrase, so a second screen would add friction without
     // asking for any knowledge the visitor has not already proved.
     const granted = slug === LOCKDOWN_SLUG ? allProtectedSlugs : [slug]
-    const cookieValue = await signCookieValue(secret, [
+    const cookieValue = await signCookieValue(key, [
       ...new Set([...priorSlugs, ...granted]),
     ])
     const response = NextResponse.json({ success: true })
@@ -88,7 +89,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: MAX_AGE_SECONDS,
       path: '/',
     })
 

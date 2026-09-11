@@ -90,6 +90,21 @@ bookmarked, and can never claim the production domain.
 The template ships with system fonts and neutral greys so that nothing about
 it reads as someone else's design. `setup-portfolio` replaces it.
 
+### The access cookie expires on the server, and follows the passphrase
+The cookie carries its signed issue time and the server refuses it after 24
+hours; the browser's own expiry is only a courtesy, since a copied cookie
+ignores it. It is signed with a key made from `SESSION_SECRET` and the
+passphrase, so changing the passphrase signs everyone out. Considered: a
+list of revoked cookies. Chosen because it needs no storage and the
+passphrase is already the thing you change when access should end.
+
+### Study data never enters a browser component
+Anything a `'use client'` file imports is compiled into public JavaScript
+under `/_next/static`, which Cloudflare serves before the passphrase can
+be checked. So only server components read study data, and pass plain
+strings down. Found by the third security review; enforced by
+`npm run check:security`.
+
 ### Independent review by fresh agents
 Tests and security reviews are done by agents that did not write the code,
 dispatched fresh each time. A reviewer that remembers writing the code, or
