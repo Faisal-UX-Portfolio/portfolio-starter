@@ -68,5 +68,5 @@ export async function middleware(request: NextRequest) {
 // Next requires this to be statically analysable, so it cannot depend on
 // LOCKDOWN; when the site is open the body is a cheap check with no I/O.
 export const config = {
-  matcher: ['/((?!favicon.ico).*)'],
+  matcher: ['/(.*)'],
 }

@@ -135,7 +135,7 @@ const mustContain = {
     ['LOCKDOWN_OPEN_PATHS.has(pathname)', 'the exact-match lockdown allowlist'],
     ['normalisePath(request.nextUrl.pathname)', 'decoding the path before matching it'],
     ["pathname === '/_next/image'", 'the image optimiser being switched off'],
-    ["matcher: ['/((?!favicon.ico).*)']", 'the middleware running on every path, _next included'],
+    ["matcher: ['/(.*)']", 'the middleware running on every path, _next included'],
     ['isUnderProtectedBase(matchable, base)', 'the exact, case-insensitive protected path matching'],
   ],
   'src/lib/paths.ts': [['pathname === `${base}/unlock`', 'the exact unlock-page exemption']],

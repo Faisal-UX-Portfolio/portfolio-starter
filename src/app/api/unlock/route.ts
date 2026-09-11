@@ -22,7 +22,12 @@ function rateLimited(ip: string): boolean {
   }
   recent.push(now)
   attempts.set(ip, recent)
-  if (attempts.size > 10_000) attempts.clear()
+  // Forget only addresses whose window has passed: clearing everything
+  // would let someone with enough addresses reset their own count.
+  // ponytail: an attacker with >10,000 live addresses grows the map; the Cloudflare rule is the real cap
+  if (attempts.size > 10_000) {
+    for (const [key, times] of attempts) if (now - times[times.length - 1] >= WINDOW_MS) attempts.delete(key)
+  }
   return false
 }
 

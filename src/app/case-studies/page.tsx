@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { caseStudies } from '@/lib/case-studies'
 import { site } from '@/content/site'
-import { StudyCard } from '@/components/StudyCard'
+import { StudyCard, cardData } from '@/components/StudyCard'
 
 const description = `Case studies by ${site.name}, ${site.role}.`
 
@@ -24,7 +24,7 @@ export default function CaseStudiesPage() {
       <ul className="m-0 grid list-none grid-cols-[minmax(0,1fr)] gap-6 p-0 md:grid-cols-2">
         {caseStudies.map((study) => (
           <li key={study.slug}>
-            <StudyCard study={study} />
+            <StudyCard study={cardData(study)} />
           </li>
         ))}
       </ul>

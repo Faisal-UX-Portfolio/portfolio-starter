@@ -7,7 +7,22 @@ import { accentStyle, type CaseStudyMeta } from '@/lib/case-studies'
  * its cover: the cover lives behind the passphrase with the rest of the
  * study, so it would not load for a visitor who has not unlocked it.
  */
-export function StudyCard({ study }: { study: CaseStudyMeta }) {
+type CardData = Pick<CaseStudyMeta, 'slug' | 'title' | 'client' | 'colour' | 'protected'> &
+  Partial<Pick<CaseStudyMeta, 'summary' | 'coverImage'>>
+
+/**
+ * Only what the card shows. React's development build copies a component's
+ * props into the page source, so passing the whole study would publish a
+ * protected study's outcome and quote there, even though nothing renders it.
+ */
+export function cardData(s: CaseStudyMeta): CardData {
+  const { slug, title, client, colour } = s
+  return s.protected
+    ? { slug, title, client, colour, protected: true }
+    : { slug, title, client, colour, protected: s.protected, summary: s.summary, coverImage: s.coverImage }
+}
+
+export function StudyCard({ study }: { study: CardData }) {
   return (
     <Link
       href={`/case-studies/${study.slug}`}

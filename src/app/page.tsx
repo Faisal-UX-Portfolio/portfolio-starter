@@ -4,7 +4,7 @@ import { ArrowRight, Download } from 'lucide-react'
 import { caseStudies } from '@/lib/case-studies'
 import { site, CV_URL, CV_DOWNLOAD_NAME } from '@/content/site'
 import { cv } from '@/content/cv'
-import { StudyCard } from '@/components/StudyCard'
+import { StudyCard, cardData } from '@/components/StudyCard'
 
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
@@ -47,7 +47,7 @@ export default function HomePage() {
         <ul className="m-0 grid list-none grid-cols-[minmax(0,1fr)] gap-6 p-0 md:grid-cols-2">
           {studies.map((study) => (
             <li key={study.slug}>
-              <StudyCard study={study} />
+              <StudyCard study={cardData(study)} />
             </li>
           ))}
         </ul>
