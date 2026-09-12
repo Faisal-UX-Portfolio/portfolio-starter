@@ -21,9 +21,12 @@ You need a Mac with an internet connection. Everything else is free.
 2. **Get this project.** In a new Code session, say:
 
    > Clone https://github.com/Faisal-UX-Portfolio/portfolio-starter into my
-   > Documents folder as my-portfolio, and open it.
+   > Documents folder as my-portfolio.
 
-3. **In that project, say "set up my portfolio".**
+3. **Start a new Code session with the `my-portfolio` folder selected**,
+   and say "set up my portfolio". It has to be a new session: Claude only
+   picks up the project's setup guide and its testing and security
+   reviewers when a session starts in the folder.
 
 That is all. Claude guides you from there, one step at a time, and you can
 stop whenever you like and say "continue setup" later.
@@ -32,10 +35,12 @@ stop whenever you like and say "continue setup" later.
 
 1. Checks your computer has what it needs, and creates your passphrase
 2. Installs a few useful skills (Ponytail, Impeccable, Apple design)
-3. Asks about you, and reads your current CV
-4. Goes through your moodboard of sites you like, one at a time
-5. Designs your home page and a case study page, with up to two rounds of
+3. Goes through your moodboard of sites you like, screenshots or links, one
+   at a time
+4. Designs your home page and a case study page, with up to two rounds of
    feedback
+5. Reads your current CV, then builds your new CV and your home and About
+   page content from it
 6. Builds the site from the approved designs, then has it tested and
    security reviewed
 7. Shows you where your own case studies, images and CV go

@@ -105,6 +105,22 @@ be checked. So only server components read study data, and pass plain
 strings down. Found by the third security review; enforced by
 `npm run check:security`.
 
+### Setup designs first, then writes the content
+The moodboard and the two designs come before the CV and the home and About
+content. Found in Faisal's test run: the design shapes everything after it,
+so settling it first means the words are written for a known layout rather
+than retrofitted. The mockups need only the owner's name and headline role,
+asked for in two quick questions. The moodboard takes links as well as
+screenshots, because a live site shows motion, hover states and the phone
+layout that a screenshot cannot.
+
+### A new session in the project, not the one that cloned it
+Claude Code loads a project's skills, agents and settings when a session
+starts. A session that clones the template mid-conversation has none of
+them: it could read the setup skill as a file, but the reviewer agents and
+the Stop hook would be missing. So the README and the starting prompt clone
+first, then start a new session in the folder.
+
 ### Independent review by fresh agents
 Tests and security reviews are done by agents that did not write the code,
 dispatched fresh each time. A reviewer that remembers writing the code, or

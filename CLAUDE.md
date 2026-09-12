@@ -10,6 +10,13 @@ If `.portfolio-setup.json` does not exist, or its `phase` is below 10, the
 owner has not finished setting up. Offer to start or continue the
 `setup-portfolio` skill before anything else, and say which step it is on.
 
+If `setup-portfolio` is not in your list of skills, this session started
+before the project was on disk (for example, the session that cloned it).
+Skills, the reviewer agents and the project settings load only when a
+session starts, so do not work around it by reading the skill file. Tell
+the owner to start a new Code session with this folder selected and say
+"set up my portfolio" there.
+
 ## Read before changing anything
 
 1. **STANDARDS.md**: the design, engineering and security rules, and the
@@ -19,7 +26,7 @@ owner has not finished setting up. Offer to start or continue the
 3. **DECISIONS.md**: why things are the way they are. Add to it when you
    make a significant decision.
 4. **GO-LIVE.md**: where the launch stands, and how deployment works.
-5. **docs/DESIGN-BRIEF.md** (once setup step 4 has run): the owner's design
+5. **docs/DESIGN-BRIEF.md** (once setup step 3 has run): the owner's design
    direction. Design decisions follow it.
 6. **docs/SECURITY.md**: what the passphrase protects and what it does not.
 
@@ -65,6 +72,6 @@ owner has not finished setting up. Offer to start or continue the
 
 ## House style
 
-Set by setup step 3. Until then: UK English.
+Set by setup step 1. Until then: UK English.
 
 <!-- setup-portfolio writes the owner's spelling and writing preferences here -->
